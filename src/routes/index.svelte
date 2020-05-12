@@ -6,7 +6,10 @@
       const usStats = await requests.usStats();
       return { usStats };
     }
-    catch(e) {}
+    catch(e) {
+      this.error(500, 'Error fetching data');
+      return;
+    }
   }
 </script>
 
