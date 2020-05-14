@@ -37,7 +37,7 @@ function historicState(state, historicData) {
 }
 
 function parseHistoric(historicData) {
-  return [
+  const fields = [
     {
       label: 'Cases',
       key: 'positive',
@@ -63,7 +63,9 @@ function parseHistoric(historicData) {
       key: 'death',
       color: 'rgb(255, 99, 132)',
     },
-  ].reduce((prev, next) => {
+  ];
+
+  return fields.reduce((prev, next) => {
     if (historicData.filter((d) => d[next.key]).length > 4) {
       prev.push(parseChart(historicData, next.key, next.label, next.color));
     }

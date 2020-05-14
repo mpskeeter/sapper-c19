@@ -4,7 +4,8 @@
   export async function preload() {
     try {
       const stats = await requests.usStats();
-      return { stats };
+      const historic = await requests.historicUS();
+      return { stats, historic };
     }
     catch(e) {
       this.error(500, 'Error fetching data');
@@ -19,6 +20,7 @@
   import TableContainer from '../components/TableContainer.svelte';
 
   export let stats;
+  export let historic;
 </script>
 
 <svelte:head>
@@ -32,5 +34,5 @@
 </div>
 
 <CovidStat {...stats} />
-<CovidChart />
+<CovidChart {...historic} />
 <TableContainer />
