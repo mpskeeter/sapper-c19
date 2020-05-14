@@ -10,7 +10,6 @@ function usStats(data) {
 
 function stateStats(state, data) {
   const stateRawData = data.find((d) => d.state === state);
-
   return parseStats(stateRawData);
 }
 

@@ -3,8 +3,8 @@
 
   export async function preload() {
     try {
-      const usStats = await requests.usStats();
-      return { usStats };
+      const stats = await requests.usStats();
+      return { stats };
     }
     catch(e) {
       this.error(500, 'Error fetching data');
@@ -18,8 +18,7 @@
   import CovidChart from '../components/CovidChart.svelte'
   import TableContainer from '../components/TableContainer.svelte';
 
-  export let usStats;
-  console.log('usStats', usStats);
+  export let stats;
 </script>
 
 <svelte:head>
@@ -32,6 +31,6 @@
   </div>
 </div>
 
-<CovidStat {...usStats} />
+<CovidStat {...stats} />
 <CovidChart />
 <TableContainer />
