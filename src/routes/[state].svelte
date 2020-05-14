@@ -10,7 +10,8 @@
 
     try {
       const stats = await requests.stateStats(state);
-      return { state, stats };
+      const historic = await requests.historicState(state);
+      return { state, stats, historic };
     }
     catch(e) {
       this.error(500, 'Error fetching data');
@@ -26,6 +27,7 @@
 
   export let state;
   export let stats;
+  export let historic;
 </script>
 
 <svelte:head>
@@ -41,4 +43,4 @@
 <h1>{state}</h1>
 
 <CovidStat {...stats} />
-<CovidChart />
+<CovidChart {...historic} />
