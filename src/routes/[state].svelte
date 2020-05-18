@@ -2,16 +2,17 @@
   import requests from '../data/requests.js';
   import stateNames from '../data/stateNames.js';
   export async function preload(page) {
-    const state = page.params['state'];
-    if (stateNames.find(s => s.abbreviation === state) === undefined) {
+    const stateAbbr = page.params['state'];
+    const state = stateNames.find(s => s.abbreviation === stateAbbr);
+    if (state === undefined) {
       this.error (404, "State Not Found.");
       return
     }
 
     try {
-      const stats = await requests.stateStats(state);
-      const historic = await requests.historicState(state);
-      return { state, stats, historic };
+      const stats = await requests.stateStats(state.abbreviation);
+      const historic = await requests.historicState(state.abbreviation);
+      return { state: state.name, stats, historic };
     }
     catch(e) {
       this.error(500, 'Error fetching data');
@@ -40,7 +41,5 @@
   </div>
 </div>
 
-<h1>{state}</h1>
-
 <CovidStat {...stats} />
-<CovidChart historicData={historic} title="{state} Covid-19"  />
+<CovidChart historicData={historic} title="Covid-19 - {state} "  />
