@@ -43,4 +43,4 @@
 <h1>{state}</h1>
 
 <CovidStat {...stats} />
-<CovidChart {...historic} />
+<CovidChart historicData={historic} title="{state} Covid-19"  />
