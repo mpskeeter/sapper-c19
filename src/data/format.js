@@ -1,3 +1,10 @@
+function defaultZero(num) {
+  if (num === null || num === undefined) {
+    return 0;
+  }
+  return num;
+}
+
 function number(num) {
   if (num === null || num === undefined) {
     return 'unknown';
@@ -7,5 +14,6 @@ function number(num) {
 }
 
 export default {
+  defaultZero,
   number,
 };

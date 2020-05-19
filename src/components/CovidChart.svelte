@@ -1,13 +1,13 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import Chart from "chart.js";
-  export let historicData;
+  export let chartData;
   export let title;
   let hideChart = false;
   let chartElement;
   let chart;
   onMount(() => {
-    if (historicData && document.body.clientWidth > 680) {
+    if (chartData && document.body.clientWidth > 680) {
       createChart();
       return;
     }
@@ -22,7 +22,7 @@
     chart = new Chart(chartElement.getContext("2d"), {
       type: "line",
       data: {
-        datasets: historicData
+        datasets: chartData
       },
       options: {
         responsive: true,
