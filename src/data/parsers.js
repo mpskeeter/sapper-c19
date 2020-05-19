@@ -1,42 +1,8 @@
 import format from './format';
 import moment from 'moment';
-// import stateNames from './stateNames';
+import stateNames from './stateNames';
 
-function usStats(data) {
-  const [usStatRaw] = data;
-
-  return parseStats(usStatRaw);
-}
-
-function stateStats(state, data) {
-  const stateRawData = data.find((d) => d.state === state);
-  return parseStats(stateRawData);
-}
-
-function stateTable(stateData) {
-  return stateData.map((data) => {
-    const {name} = stateNames.find((d) => d.abbreviation === data.state);
-    return {
-      cases: format.number(data.positive),
-      deaths: format.number(data.death),
-      tested: format.number(data.totalTestResults),
-      state: format.number(data.state),
-      fullStateName: name,
-    };
-  });
-}
-
-function historicUS(historicData) {
-  return parseHistoric(historicData);
-}
-
-function historicState(state, historicData) {
-  const stateHistoric = historicData.filter((d) => d.state === state);
-
-  return parseHistoric(stateHistoric);
-}
-
-function parseHistoric(historicData) {
+function parseChart(historicData) {
   const fields = [
     {
       label: 'Cases',
@@ -67,14 +33,14 @@ function parseHistoric(historicData) {
 
   return fields.reduce((prev, next) => {
     if (historicData.filter((d) => d[next.key]).length > 4) {
-      prev.push(parseChart(historicData, next.key, next.label, next.color));
+      prev.push(parseChartRow(historicData, next.key, next.label, next.color));
     }
 
     return prev;
   }, []);
 }
 
-function parseChart(historicData, key, label, color) {
+function parseChartRow(historicData, key, label, color) {
   const chartData = historicData.map((data) => {
     return {
       x: moment(data.date, 'YYYYMMDD'),
@@ -90,23 +56,163 @@ function parseChart(historicData, key, label, color) {
   };
 }
 
-function parseStats(rawStats) {
+function parseTableData(row) {
+// function parseTableData(row, includeDelta) {
+  let data = {
+    hash: row.hash,
+    tested: row.totalTestResults,
+    cases: row.positive,
+    positivePercentage: ((row.positive/row.totalTestResults) * 100).toFixed(2) + '%',
+    hospitalized: row.hospitalizedCurrently,
+    deaths: row.death,
+  };
+
+  // if (includeDelta) {
+  //   data.delta = {
+  //     tested: format.defaultZero(row.totalTestResultsIncrease),
+  //     cases: format.defaultZero(row.positiveIncrease),
+  //     positivePercentage: ((row.positiveIncrease/row.totalTestResultsIncrease) * 100).toFixed(2),
+  //     // hospitalized: format.defaultZero(row.hospitalizedIncrease),
+  //     deaths: format.defaultZero(row.deathIncrease),
+  //   };
+  // }
+
+  // console.log('data:', data);
+
+  return data;
+}
+
+function cumulativeTable(rawData) {
+  const label = [
+    {
+      label: 'key',
+      key: 'hash',
+      display: false,
+    },
+    {
+      label: 'State',
+      key: 'state',
+      displayValue: 'fullState',
+      display: true,
+      isLink: true,
+    },
+    {
+      label: 'Tested',
+      key: 'tested',
+      display: true,
+    },
+    {
+      label: 'Cases',
+      key: 'cases',
+      display: true,
+    },
+    {
+      label: '% (Cases/Tested)',
+      key: 'positivePercentage',
+      display: true,
+    },
+    {
+      label: 'Hospitalized',
+      key: 'hospitalized',
+      display: true,
+    },
+    {
+      label: 'Deaths',
+      key: 'deaths',
+      display: true,
+    },
+  ];
+
+  const data = rawData.map((row) => {
+    // const rowData = parseTableData(row, false)
+    const rowData = parseTableData(row)
+    rowData.state = row.state;
+    rowData.fullState = stateNames.find((d) => d.abbreviation === row.state).name;
+    return rowData;
+  });
+
+  // console.log('data:', data);
+
   return {
-    cases: format.number(rawStats.positive),
-    deaths: format.number(rawStats.death),
-    recovered: format.number(rawStats.recovered),
-    ventilator: format.number(rawStats.onVentilatorCurrently),
-    hospitalized: format.number(rawStats.hospitalized),
-    icu: format.number(rawStats.inIcuCurrently),
-    tested: format.number(rawStats.totalTestResults),
-    updated: moment(rawStats.lastModified).format('LT'),
+    label,
+    data
   };
 }
 
+function dailyTable(rawData) {
+  const label = [
+    {
+      label: 'key',
+      key: 'hash',
+      display: false,
+    },
+    {
+      label: 'Date',
+      key: 'date',
+      display: true,
+    },
+    {
+      label: 'Tested',
+      key: 'tested',
+      display: true,
+    },
+    {
+      label: 'Cases',
+      key: 'cases',
+      display: true,
+    },
+    {
+      label: '% (Cases/Tested)',
+      key: 'positivePercentage',
+      display: true,
+    },
+    {
+      label: 'Hospitalized',
+      key: 'hospitalized',
+      display: true,
+    },
+    {
+      label: 'Deaths',
+      key: 'deaths',
+      display: true,
+    },
+  ];
+
+  const data = rawData.map((row) => {
+    // const rowData = parseTableData(row, true);
+    const rowData = parseTableData(row);
+    rowData.date = moment(row.date, 'YYYYMMDD').format('L');
+    return rowData;
+  });
+
+  // console.log('data:', data);
+
+  return {
+    label,
+    data
+  };
+}
+
+function parseStats(rawStats) {
+  const stats = {
+    cases: rawStats.positive,
+    deaths: rawStats.death,
+    recovered: rawStats.recovered,
+    ventilator: rawStats.onVentilatorCurrently,
+    hospitalized: rawStats.hospitalized,
+    icu: rawStats.inIcuCurrently,
+    tested: rawStats.totalTestResults,
+    updated: moment(rawStats.lastModified).format('LT'),
+  };
+
+  // console.log('stats:', stats);
+
+  return stats;
+}
+
 export default {
-  usStats,
-  stateStats,
-  historicUS,
-  historicState,
-  stateTable,
+  parseStats,
+  parseChart,
+  cumulativeTable,
+  dailyTable,
 };

@@ -1,5 +1,7 @@
 <script context="module">
   import requests from '../data/requests.js';
+  import parsers from '../data/parsers.js';
+
   import stateNames from '../data/stateNames.js';
   export async function preload(page) {
     const stateAbbr = page.params['state'];
@@ -10,9 +12,13 @@
     }
 
     try {
-      const stats = await requests.stateStats(state.abbreviation);
-      const historic = await requests.historicState(state.abbreviation);
-      return { state: state.name, stats, historic };
+      const rawStats = await requests.stateDaily(state.abbreviation);
+
+      const stats = parsers.parseStats(rawStats[0]);
+      const chart = parsers.parseChart(rawStats);
+      const table = parsers.dailyTable(rawStats);
+
+      return { state: state.name, stats, chart, table };
     }
     catch(e) {
       this.error(500, 'Error fetching data');
@@ -28,7 +34,8 @@
 
   export let state;
   export let stats;
-  export let historic;
+  export let chart;
+  export let table;
 </script>
 
 <svelte:head>
@@ -41,5 +48,6 @@
   </div>
 </div>
 
-<CovidStat {...stats} />
-<CovidChart historicData={historic} title="Covid-19 - {state} "  />
+<CovidStat stats={stats} />
+<CovidChart chartData={chart} title="Covid-19 - {state} "  />
+<TableContainer data={table} />
